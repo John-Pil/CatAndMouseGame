@@ -8,7 +8,10 @@ public:
 	cMain();
 	~cMain();
 
-	wxImage *imgMap[16][16];
+
+	int mapWidth = 16, mapHeight = 16;
+	wxStaticBitmap **imgMap;
 	wxListBox *listLog = nullptr;
+
 };
 

@@ -1,20 +1,31 @@
 #include "cMain.h"
 
-cMain::cMain() : wxFrame(nullptr, wxID_ANY, "CatAndMouse", wxPoint(300, 30), wxSize(1024, 1024))
+cMain::cMain() : wxFrame(nullptr, wxID_ANY, "CatAndMouse", wxPoint(300, 30), wxSize(1124, 1024))
 {
-	byte counter = 0;
-	listLog = new wxListBox();
+	listLog = new wxListBox(this, wxID_ANY, wxPoint(1,1), wxSize(100, 924));
 	wxImage::AddHandler(new wxPNGHandler);
+	imgMap = new wxStaticBitmap * [mapWidth * mapHeight];
+	
+	wxGridSizer *imgGrid = new wxGridSizer(mapWidth, mapHeight, 0, 0);
 
-	for (int i = 0; i < 16; i++) 
+	for (int x = 0; x < mapWidth; x++) 
 	{
-		for (int j = 0; j < 16; j++)
+		for (int y = 0; y < mapHeight; y++)
 		{
-			imgMap[i][j] = new wxImage("Sprites/FloorTile-0001.png", wxBITMAP_TYPE_PNG);
-			counter++;
+			if (x != 0 && x != 15 && y != 0 && y != 15) 
+			{
+				imgMap[y * mapWidth + x] = new wxStaticBitmap(this, 0, wxBitmap("Sprites/FloorTile-0001.png", wxBITMAP_TYPE_PNG));
+			}
+			else 
+			{
+				imgMap[y * mapWidth + x] = new wxStaticBitmap(this, 1, wxBitmap("Sprites/WallTile-0001.png", wxBITMAP_TYPE_PNG));
+			}
+			imgGrid->Add(imgMap[y * mapWidth + x], wxSizerFlags().Expand());
 		}
 	}
-	std::cout << counter;
+
+	this->SetSizer(imgGrid);
+	imgGrid->Layout();
 }
 
 cMain::~cMain()
