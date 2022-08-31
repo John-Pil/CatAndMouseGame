@@ -8,11 +8,9 @@ class cCatAndMouseLauncher : public wxApp
 public:
 	cCatAndMouseLauncher();
 	~cCatAndMouseLauncher();
+	virtual bool OnInit();
 
 private:
 	cMain *m_frame1 = nullptr;
-
-public:
-	virtual bool OnInit();
 };
 

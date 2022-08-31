@@ -6,6 +6,7 @@ class cMain : public wxFrame
 {
 public:
 	cMain();
+	cMain(std::string file);
 	~cMain();
 
 
