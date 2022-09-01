@@ -21,10 +21,12 @@
   <ItemGroup>
     <ClInclude Include="cCatAndMouseLauncher.h" />
     <ClInclude Include="cMain.h" />
+    <ClInclude Include="cMazeAI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cCatAndMouseLauncher.cpp" />
     <ClCompile Include="cMain.cpp" />
+    <ClCompile Include="cMazeAI.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

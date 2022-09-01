@@ -75,9 +75,11 @@ cMain::cMain(std::string file) : wxFrame(nullptr, wxID_ANY, "CatAndMouse", wxPoi
 				break;
 			case '2':
 				imgMap[y * mapWidth + x] = new wxStaticBitmap(this, 2, wxBitmap("Sprites/Mouse-0001.png", wxBITMAP_TYPE_PNG));
+				mouse = new cMazeAI(2, 'N', x, y, 4);
 				break;
 			case '3':
 				imgMap[y * mapWidth + x] = new wxStaticBitmap(this, 3, wxBitmap("Sprites/Cat-0001.png", wxBITMAP_TYPE_PNG));
+				cat = new cMazeAI(x, y);
 				break;
 			case '4':
 				imgMap[y * mapWidth + x] = new wxStaticBitmap(this, 4, wxBitmap("Sprites/Cheese-0001.png", wxBITMAP_TYPE_PNG));
@@ -101,4 +103,22 @@ cMain::cMain(std::string file) : wxFrame(nullptr, wxID_ANY, "CatAndMouse", wxPoi
 
 cMain::~cMain()
 {
+}
+
+void cMain::SwapTiles(int firstTile, int secondTile) 
+{
+
+}
+
+void cMain::NextStep() 
+{
+
+}
+
+void cMain::AutoCycle() 
+{
+	while (true) 
+	{
+		NextStep();
+	}
 }
