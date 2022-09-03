@@ -12,17 +12,26 @@ public:
 	~cMain();
 
 	//public class functions
+	int GetNextTileOffset(char direction);
 	void SwapTiles(int firstTile, int secondTile);
-	void NextStep();
+	bool NextStep(cMazeAI * entity);
 	void AutoCycle();
 	
 	//public variables
 	int mapWidth = 16, mapHeight = 16;
+	int *tileIds;
 	wxStaticBitmap **imgMap;
-	wxListBox *listLog = nullptr;
+	wxToolBar *listLog = nullptr;
+
+	//ai entities
+	cMazeAI *cat = nullptr;
+	cMazeAI *mouse = nullptr;
 
 private:
-	//private variables
-	cMazeAI *cat, *mouse;
+	void OnKeyPress(wxKeyEvent &evt);
+
+	bool cycling = false;
+
+	wxDECLARE_EVENT_TABLE();
 };
 

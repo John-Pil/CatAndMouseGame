@@ -50,6 +50,24 @@ char cMazeAI::GetFaceDirection()
 }
 
 /// <summary>
+/// Getter for xPos
+/// </summary>
+/// <returns>The x position of the AI</returns>
+int cMazeAI::GetXPos() 
+{
+	return xPos;
+}
+
+/// <summary>
+/// Getter for yPos
+/// </summary>
+/// <returns>The y position of the AI</returns>
+int cMazeAI::GetYPos()
+{
+	return yPos;
+}
+
+/// <summary>
 /// Change the x or y position of the AI based on its current direction
 /// </summary>
 void cMazeAI::MoveForward() 
@@ -143,14 +161,17 @@ void cMazeAI::ChangeDirection()
 /// standard routine for the AI which is run every cycle
 /// </summary>
 /// <param name="nextTile">The tile directly in front of the AI</param>
-void cMazeAI::RunRoutine(int nextTile)
+/// /// <returns>True if the ai moved forward. False if the AI rotated</returns>
+bool cMazeAI::RunRoutine(int nextTile)
 {
-	if (nextTile = 1 && moveNum > 0)
+	if (nextTile == 0 && moveNum > 0)
 	{
 		MoveForward();
+		return true;
 	}
 	else
 	{
 		ChangeDirection();
+		return false;
 	}
 }
