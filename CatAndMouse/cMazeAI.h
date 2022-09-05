@@ -8,10 +8,11 @@ public:
 	~cMazeAI();
 
 	//public class functions
-	bool RunRoutine(int nextTile);
+	int RunRoutine(int * visibleTileIds);
 	char GetFaceDirection();
 	int GetXPos();
 	int GetYPos();
+
 	//public variables
 	int  id, interestId; //tile ID of the AI and its target
 	int xPos, yPos; //location of the AI on the maze grid
@@ -20,7 +21,7 @@ public:
 private:
 	//private class functions
 	void MoveForward();
-	void ChangeDirection();
+	int ChangeDirection(int leftTileId, int rightTileId);
 
 	//private variables
 	int moveNum = 0; //the number of moves the AI will take before swapping direction

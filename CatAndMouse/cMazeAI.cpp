@@ -1,13 +1,14 @@
 #include <stdlib.h>
+#include <ctime>
 
 #include "cMazeAI.h"
 
 /// <summary>
-/// Constructor for cMazeAI that defines the x and y position of the AI
+/// Constructor for cMazeAI that defines the x and y position of the ai
 /// Defaults to a standard catAI
 /// </summary>
-/// <param name="x">the x position of the AI</param>
-/// <param name="y">the y position of the AI</param>
+/// <param name="x">the x position of the ai</param>
+/// <param name="y">the y position of the ai</param>
 cMazeAI::cMazeAI(int x, int y) 
 {
 	id = 3;
@@ -15,25 +16,29 @@ cMazeAI::cMazeAI(int x, int y)
 	interestId = 2;
 	xPos = x;
 	yPos = y;
-	moveNum = rand() % 5 + 1; //set moveNum to a value between 1 and 5
+
+	srand((unsigned)time(NULL));
+	moveNum = rand() % 3 + 1; //set moveNum to a value between 1 and 5
 }
 
 /// <summary>
 /// Constructor for cMazeAI that defines all variables except its initial moveNum
 /// </summary>
-/// <param name="thisId">The id of the AI</param>
-/// <param name="direction">The direction the AI is facing</param>
-/// <param name="x">the x position of the AI</param>
-/// <param name="y">the y position of the AI</param>
-/// <param name="interest">the target of the AI</param>
+/// <param name="thisId">The id of the ai</param>
+/// <param name="direction">The direction the ai is facing</param>
+/// <param name="x">the x position of the ai</param>
+/// <param name="y">the y position of the ai</param>
+/// <param name="interest">the target of the ai</param>
 cMazeAI::cMazeAI(int thisId, char direction, int x, int y, int interest)
-{
+{	
 	id = thisId;
 	faceDirection = direction;
 	interestId = interest;
 	xPos = x;
 	yPos = y;
-	moveNum = rand() % 5 + 1; //set moveNum to a value between 1 and 5
+
+	srand((unsigned)time(NULL));
+	moveNum = rand() % 3 + 1; //set moveNum to a value between 1 and 5
 }
 
 cMazeAI::~cMazeAI() 
@@ -43,7 +48,7 @@ cMazeAI::~cMazeAI()
 /// <summary>
 /// Getter for faceDirection
 /// </summary>
-/// <returns>The direction the AI is facing</returns>
+/// <returns>The direction the ai is facing</returns>
 char cMazeAI::GetFaceDirection() 
 {
 	return faceDirection;
@@ -52,7 +57,7 @@ char cMazeAI::GetFaceDirection()
 /// <summary>
 /// Getter for xPos
 /// </summary>
-/// <returns>The x position of the AI</returns>
+/// <returns>The x position of the ai</returns>
 int cMazeAI::GetXPos() 
 {
 	return xPos;
@@ -61,14 +66,14 @@ int cMazeAI::GetXPos()
 /// <summary>
 /// Getter for yPos
 /// </summary>
-/// <returns>The y position of the AI</returns>
+/// <returns>The y position of the ai</returns>
 int cMazeAI::GetYPos()
 {
 	return yPos;
 }
 
 /// <summary>
-/// Change the x or y position of the AI based on its current direction
+/// Change the x or y position of the ai based on its current direction
 /// </summary>
 void cMazeAI::MoveForward() 
 {
@@ -90,88 +95,182 @@ void cMazeAI::MoveForward()
 }
 
 /// <summary>
-/// Change direction of the AI to one of the three other directions
+/// Change direction of the ai. The ai will make a choice to go left or right.
+/// If the choice of the ai is blocked off then it will go the other direction.
+/// If both the left and right are blocked it will go back the way it came.
 /// </summary>
-void cMazeAI::ChangeDirection() 
+int cMazeAI::ChangeDirection(int rightTileId, int leftTileId)
 {
-	int choice = rand() % 3;
+	//if the left and right are blocked off then reverse direction
+	if (rightTileId == 1 && leftTileId == 1)
+	{
+		switch (faceDirection) 
+		{
+		case('N'):
+			faceDirection = 'S';
+			break;
+		case('E'):
+			faceDirection = 'W';
+			break;
+		case('S'):
+			faceDirection = 'N';
+			break;
+		case('W'):
+			faceDirection = 'E';
+			break;
+		}
+		return 3;
+	}
 
+	//1 = right, 2 = left
+	int choice = (rand() % 2) + 1;
+
+	//attempt to turn in the direction of the ai's choice based on where its facing
+	//if the choice of the ai is blocked then go the other direction
 	switch (faceDirection) 
 	{
 	case('N'):
-		if (choice == 0) 
+		if (choice == 1) 
 		{
-			faceDirection = 'E';
-		}
-		else if (choice == 1) 
-		{
-			faceDirection = 'S';
+			if (rightTileId == 0)
+			{
+				faceDirection = 'E';
+				return 1;
+			}
+			else
+			{
+				faceDirection = 'W';
+				return 2;
+			}
 		}
 		else 
 		{
-			faceDirection = 'W';
+			if (leftTileId == 0)
+			{
+				faceDirection = 'W';
+				return 2;
+			}
+			else
+			{
+				faceDirection = 'E';
+				return 1;
+			}
 		}
-		break;
 	case('E'):
-		if (choice == 0)
+		if (choice == 1)
 		{
-			faceDirection = 'S';
-		}
-		else if (choice == 1)
-		{
-			faceDirection = 'W';
+			if (rightTileId == 0)
+			{
+				faceDirection = 'S';
+				return 1;
+			}
+			else
+			{
+				faceDirection = 'N';
+				return 2;
+			}
 		}
 		else
 		{
-			faceDirection = 'N';
+			if (leftTileId == 0)
+			{
+				faceDirection = 'N';
+				return 2;
+			}
+			else
+			{
+				faceDirection = 'S';
+				return 1;
+			}
 		}
-		break;
 	case('S'):
-		if (choice == 0)
+		if (choice == 1)
 		{
-			faceDirection = 'W';
-		}
-		else if (choice == 1)
-		{
-			faceDirection = 'N';
+			if (rightTileId == 0)
+			{
+				faceDirection = 'W';
+				return 1;
+			}
+			else
+			{
+				faceDirection = 'E';
+				return 2;
+			}
 		}
 		else
 		{
-			faceDirection = 'E';
+			if (leftTileId == 0)
+			{
+				faceDirection = 'E';
+				return 2;
+			}
+			else
+			{
+				faceDirection = 'W';
+				return 1;
+			}
 		}
-		break;
 	case('W'):
-		if (choice == 0)
+		if (choice == 1)
 		{
-			faceDirection = 'N';
-		}
-		else if (choice == 1)
-		{
-			faceDirection = 'E';
+			if (rightTileId == 0)
+			{
+				faceDirection = 'N';
+				return 1;
+			}
+			else
+			{
+				faceDirection = 'S';
+				return 2;
+			}
 		}
 		else
 		{
-			faceDirection = 'S';
+			if (leftTileId == 0)
+			{
+				faceDirection = 'S';
+				return 2;
+			}
+			else
+			{
+				faceDirection = 'N';
+				return 1;
+			}
 		}
-		break;
 	}
 }
 
 /// <summary>
-/// standard routine for the AI which is run every cycle
+/// Standard routine for the ai which is run every cycle
 /// </summary>
-/// <param name="nextTile">The tile directly in front of the AI</param>
-/// /// <returns>True if the ai moved forward. False if the AI rotated</returns>
-bool cMazeAI::RunRoutine(int nextTile)
+/// <param name="visibleTileIds">The ids of all tiles visible to the ai</param>
+/// /// <returns>The tile in visibleTileIds that the ai chose to move to</returns>
+int cMazeAI::RunRoutine(int * visibleTileIds)
 {
-	if (nextTile == 0 && moveNum > 0)
+	//if the tile in front of the ai is not a floor tile then change direction
+	if (visibleTileIds[0] != 0)
 	{
+		int tile = ChangeDirection(visibleTileIds[1], visibleTileIds[2]);
 		MoveForward();
-		return true;
+		moveNum = rand() % 3 + 1; //reset moveNum to a value between 1 and 5
+		return tile;		
 	}
 	else
 	{
-		ChangeDirection();
-		return false;
+		//if the ai wants to move forward or doesn't but cant turn left or right
+		//then continue moving forward. otherwise change direction
+		if (moveNum > 0 || (visibleTileIds[1] == 1 && visibleTileIds[2] == 1))
+		{
+			MoveForward();
+			moveNum--;
+			return 0;
+		}
+		else
+		{
+			int tile = ChangeDirection(visibleTileIds[1], visibleTileIds[2]);
+			MoveForward();
+			moveNum = rand() % 3 + 1; //reset moveNum to a value between 1 and 5
+			return tile;
+		}
 	}
 }

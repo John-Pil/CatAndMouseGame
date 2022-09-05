@@ -12,7 +12,7 @@ public:
 	~cMain();
 
 	//public class functions
-	int GetNextTileOffset(char direction);
+	int * GetVisible(char direction, int startingTile);
 	void SwapTiles(int firstTile, int secondTile);
 	bool NextStep(cMazeAI * entity);
 	void AutoCycle();

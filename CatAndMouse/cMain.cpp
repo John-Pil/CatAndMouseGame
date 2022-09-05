@@ -67,9 +67,9 @@ cMain::cMain(std::string file) : wxFrame(nullptr, wxID_ANY, "CatAndMouse", wxPoi
 	fileReader.open(file);
 	char *block;
 
-	for (int x = 0; x < mapWidth; x++)
+	for (int y = 0; y < mapWidth; y++)
 	{
-		for (int y = 0; y < mapHeight; y++)
+		for (int x = 0; x < mapHeight; x++)
 		{
 			block = new char[2];
 			fileReader.read(block, 2);
@@ -121,30 +121,50 @@ cMain::~cMain()
 }
 
 /// <summary>
-/// gets the id of the tile directly in front of an ai
+/// gets the locations of all tiles visible to the ai
 /// </summary>
-/// <param name="direction">The direction the ai that requested the next tile Id is facing</param>
-/// <returns>Tile id of the tile directly in front of the requesting ai</returns>
-int cMain::GetNextTileOffset(char direction)
+/// <param name="direction">The direction the ai is facing</param>
+/// <param name="startingTile">The tile the ai is currently located at</param>
+/// <returns>int array with the locations of all tiles visible to the ai</returns>
+int * cMain::GetVisible(char direction, int startingTile)
 {
+	static int visibleTiles[4];
 	switch (direction) 
 	{
 	case 'N':
-		return -mapWidth;		
+		visibleTiles[0] = startingTile - mapWidth;
+		visibleTiles[1] = startingTile + 1;
+		visibleTiles[2] = startingTile - 1;
+		visibleTiles[3] = startingTile + mapWidth;
+		break;
 	case 'E':
-		return 1;		
+		visibleTiles[0] = startingTile + 1;
+		visibleTiles[1] = startingTile + mapWidth;
+		visibleTiles[2] = startingTile - mapWidth;
+		visibleTiles[3] = startingTile - 1;
+		break;
 	case 'S':
-		return mapWidth;		
+		visibleTiles[0] = startingTile + mapWidth;
+		visibleTiles[1] = startingTile - 1;
+		visibleTiles[2] = startingTile + 1;
+		visibleTiles[3] = startingTile - mapWidth;
+		break;
 	case 'W':
-		return -1;		
+		visibleTiles[0] = startingTile - 1;
+		visibleTiles[1] = startingTile - mapWidth;
+		visibleTiles[2] = startingTile + mapWidth;
+		visibleTiles[3] = startingTile + 1;
+		break;
 	}
+
+	return visibleTiles;
 }
 
 /// <summary>
 /// Swaps the bitmap images and ids of two tiles
 /// </summary>
-/// <param name="firstTile">The location of the first tile to be swapped in imgMap</param>
-/// <param name="secondTile">The location of the second tile to be swapped in imgMap</param>
+/// <param name="firstTile">The location of the first tile to be swapped</param>
+/// <param name="secondTile">The location of the second tile to be swapped</param>
 void cMain::SwapTiles(int firstTile, int secondTile) 
 {
 	wxBitmap imgTemp = imgMap[firstTile]->GetBitmap();
@@ -157,54 +177,73 @@ void cMain::SwapTiles(int firstTile, int secondTile)
 	tileIds[secondTile] = idTemp;
 }
 
+
+/// <summary>
+/// Performs the next step for the entity by gathering and passing information
+/// needed for the entity to move
+/// </summary>
+/// <param name="entity">The entity that is taking their turn</param>
+/// <returns>True if the entity has not found its target. False otherwise</returns>
 bool cMain::NextStep(cMazeAI * entity) 
 {
-	int startingTile, nextTile;
-	startingTile = entity->yPos * mapWidth + entity->xPos;
-	nextTile = startingTile + GetNextTileOffset(entity->GetFaceDirection());
+	int startingTile = entity->yPos * mapWidth + entity->xPos, nextTile;
+	int * visibleTiles = GetVisible(entity->GetFaceDirection(), startingTile);	
+	int visibleTileIds[4];
 
-	//if the entity rotated update the next tile and try moving again
-	while(!entity->RunRoutine(tileIds[nextTile])) 
+	//get the ids of all visible tiles	
+	for (int i = 0; i < 4; i++) 
 	{
-		nextTile = startingTile + GetNextTileOffset(entity->GetFaceDirection());
+		visibleTileIds[i] = tileIds[visibleTiles[i]];
+	}
 
-		//if the entity rotated and is now facing their target then send the signal to end the simulation
-		if (tileIds[nextTile] == entity->interestId)
+	//move the ai in the GUI based on where it chose to move to
+	nextTile = visibleTiles[entity->RunRoutine(visibleTileIds)];
+	SwapTiles(startingTile, nextTile);
+	
+	//update the visible tiles to check if the entity's target is next to it
+	//if the entity is next to their target then send the signal to end the simulation
+	visibleTiles = GetVisible(entity->GetFaceDirection(), (entity->yPos * mapWidth + entity->xPos, nextTile));
+	for (int i = 0; i < 4; i++)
+	{
+		int id = tileIds[visibleTiles[i]];
+		if (id == entity->interestId)
 		{
 			return false;
 		}
 	}
 
-	SwapTiles(startingTile, nextTile);
-
-	//if the entity is next to their target then send the signal to end the simulation
-	if (tileIds[nextTile] == entity->interestId)
-	{
-		return false;
-	}
 	return true;
 }
 
+/// <summary>
+/// Function that automatically cycles between the turns
+/// of the cat and mouse until one has found its target
+/// </summary>
 void cMain::AutoCycle() 
-{
-	bool continuing = true;
-	while (continuing) 
+{	
+	while (cycling)
 	{
 		Sleep(300);
-		continuing = NextStep(cat);
-		if (!continuing) 
+		cycling = NextStep(cat);
+		if (!cycling) 
 		{
 			break;
 		}
-		continuing = NextStep(mouse);
+		cycling = NextStep(mouse);
 	}
 }
 
+/// <summary>
+/// Event called whenever a key is pressed to start autocycling the turns of the ai
+/// </summary>
+/// <param name="evt">event passed to the function</param>
 void cMain::OnKeyPress(wxKeyEvent& evt) 
 {
 	if (!cycling) 
 	{
-		AutoCycle();
 		cycling = true;
-	}	
+		AutoCycle();		
+	}
+
+	evt.Skip();
 }
