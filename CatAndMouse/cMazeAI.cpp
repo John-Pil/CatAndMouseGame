@@ -18,7 +18,7 @@ cMazeAI::cMazeAI(int x, int y)
 	yPos = y;
 
 	srand((unsigned)time(NULL));
-	moveNum = rand() % 3 + 1; //set moveNum to a value between 1 and 5
+	moveNum = rand() % 3 + 3; //set moveNum to a value between 3 and 6
 }
 
 /// <summary>
@@ -38,7 +38,7 @@ cMazeAI::cMazeAI(int thisId, char direction, int x, int y, int interest)
 	yPos = y;
 
 	srand((unsigned)time(NULL));
-	moveNum = rand() % 3 + 1; //set moveNum to a value between 1 and 5
+	moveNum = rand() % 3 + 3; //set moveNum to a value between 3 and 6
 }
 
 cMazeAI::~cMazeAI() 
@@ -246,7 +246,8 @@ int cMazeAI::ChangeDirection(int rightTileId, int leftTileId)
 /// <param name="visibleTileIds">The ids of all tiles visible to the ai</param>
 /// /// <returns>The tile in visibleTileIds that the ai chose to move to</returns>
 int cMazeAI::RunRoutine(int * visibleTileIds)
-{
+{	
+
 	//if the tile in front of the ai is not a floor tile then change direction
 	if (visibleTileIds[0] != 0)
 	{
@@ -257,6 +258,25 @@ int cMazeAI::RunRoutine(int * visibleTileIds)
 	}
 	else
 	{
+		//check to see if the ai sees its target
+		//if it does move towards it and set its moveNum to the number of spaces
+		//ahead its target is. This should work so that if the ai sees its target
+		//it will only lose it under the condition the ai can turn left or right
+		//or if the target turns before the this ai's next move.
+		for (int i = 1; i < 16; i++)
+		{
+			if (visibleTileIds[i + 3] == 1)
+			{
+				break;
+			}
+			else if (visibleTileIds[i + 3] == interestId) 
+			{
+				MoveForward();
+				moveNum = i;
+				return 0;
+			}
+		}
+
 		//if the ai wants to move forward or doesn't but cant turn left or right
 		//then continue moving forward. otherwise change direction
 		if (moveNum > 0 || (visibleTileIds[1] == 1 && visibleTileIds[2] == 1))

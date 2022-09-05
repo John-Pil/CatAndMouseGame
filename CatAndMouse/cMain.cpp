@@ -88,7 +88,7 @@ cMain::cMain(std::string file) : wxFrame(nullptr, wxID_ANY, "CatAndMouse", wxPoi
 			case '2':
 				imgMap[y * mapWidth + x] = new wxStaticBitmap(this, 2, wxBitmap("Sprites/Mouse-0001.png", wxBITMAP_TYPE_PNG));
 				tileIds[y * mapWidth + x] = 2;
-				mouse = new cMazeAI(2, 'N', x, y, 4);
+				mouse = new cMazeAI(2, 'E', x, y, 4);
 				break;
 			case '3':
 				imgMap[y * mapWidth + x] = new wxStaticBitmap(this, 3, wxBitmap("Sprites/Cat-0001.png", wxBITMAP_TYPE_PNG));
@@ -128,32 +128,83 @@ cMain::~cMain()
 /// <returns>int array with the locations of all tiles visible to the ai</returns>
 int * cMain::GetVisible(char direction, int startingTile)
 {
-	static int visibleTiles[4];
+	static int visibleTiles[20];
 	switch (direction) 
 	{
 	case 'N':
 		visibleTiles[0] = startingTile - mapWidth;
 		visibleTiles[1] = startingTile + 1;
 		visibleTiles[2] = startingTile - 1;
-		visibleTiles[3] = startingTile + mapWidth;
+		visibleTiles[3] = startingTile + mapWidth;		
+		//gets all tiles directly in front of the ai until it sees a wall
+		if (tileIds[visibleTiles[0]] != 1)
+		{
+			for (int i = 2; i < 16; i++)
+			{
+				visibleTiles[i + 2] = startingTile - (mapWidth * i);
+				if (tileIds[visibleTiles[i + 2]] == 1)
+				{
+					break;
+				}
+			}
+		}
 		break;
 	case 'E':
 		visibleTiles[0] = startingTile + 1;
 		visibleTiles[1] = startingTile + mapWidth;
 		visibleTiles[2] = startingTile - mapWidth;
 		visibleTiles[3] = startingTile - 1;
+
+		//gets all tiles directly in front of the ai until it sees a wall
+		if (tileIds[visibleTiles[0]] != 1)
+		{
+			for (int i = 2; i < 16; i++)
+			{
+				visibleTiles[i + 2] = startingTile + i;
+				if (tileIds[visibleTiles[i + 2]] == 1)
+				{
+					break;
+				}
+			}
+		}
 		break;
 	case 'S':
 		visibleTiles[0] = startingTile + mapWidth;
 		visibleTiles[1] = startingTile - 1;
 		visibleTiles[2] = startingTile + 1;
 		visibleTiles[3] = startingTile - mapWidth;
+
+		//gets all tiles directly in front of the ai until it sees a wall
+		if (tileIds[visibleTiles[0]] != 1)
+		{
+			for (int i = 2; i < 16; i++)
+			{
+				visibleTiles[i + 2] = startingTile + (mapWidth * i);
+				if (tileIds[visibleTiles[i + 2]] == 1)
+				{
+					break;
+				}
+			}
+		}
 		break;
 	case 'W':
 		visibleTiles[0] = startingTile - 1;
 		visibleTiles[1] = startingTile - mapWidth;
 		visibleTiles[2] = startingTile + mapWidth;
 		visibleTiles[3] = startingTile + 1;
+
+		//gets all tiles directly in front of the ai until it sees a wall
+		if (tileIds[visibleTiles[0]] != 1)
+		{
+			for (int i = 2; i < 16; i++)
+			{
+				visibleTiles[i + 2] = startingTile - i;
+				if (tileIds[visibleTiles[i + 2]] == 1)
+				{
+					break;
+				}
+			}
+		}
 		break;
 	}
 
@@ -188,12 +239,21 @@ bool cMain::NextStep(cMazeAI * entity)
 {
 	int startingTile = entity->yPos * mapWidth + entity->xPos, nextTile;
 	int * visibleTiles = GetVisible(entity->GetFaceDirection(), startingTile);	
-	int visibleTileIds[4];
+	int visibleTileIds[20];
 
 	//get the ids of all visible tiles	
-	for (int i = 0; i < 4; i++) 
+	//if the entity is next to their target then send the signal to end the simulation
+	for (int i = 0; i < 20; i++) 
 	{
 		visibleTileIds[i] = tileIds[visibleTiles[i]];
+		if ( i < 3 && visibleTileIds[i] == entity->interestId)
+		{
+			return false;
+		}
+		else if (i > 3 && visibleTileIds[i] == 1) 
+		{
+			break;
+		}
 	}
 
 	//move the ai in the GUI based on where it chose to move to
@@ -205,8 +265,7 @@ bool cMain::NextStep(cMazeAI * entity)
 	visibleTiles = GetVisible(entity->GetFaceDirection(), (entity->yPos * mapWidth + entity->xPos, nextTile));
 	for (int i = 0; i < 4; i++)
 	{
-		int id = tileIds[visibleTiles[i]];
-		if (id == entity->interestId)
+		if (tileIds[visibleTiles[i]] == entity->interestId)
 		{
 			return false;
 		}
@@ -229,6 +288,7 @@ void cMain::AutoCycle()
 		{
 			break;
 		}
+		Sleep(300);
 		cycling = NextStep(mouse);
 	}
 }
